@@ -5,46 +5,52 @@
   <title>Meeting Summary Prompt Builder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --pad: 16px; --radius: 14px; }
+    :root { --pad: 16px; --radius: 14px; --err:#c62828; }
     * { box-sizing: border-box; }
-    body {
-      font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 0; padding: 32px 20px; background: #f6f7f9; color: #111;
-    }
+    body { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; margin:0; padding:32px 20px; background:#f6f7f9; color:#111; }
     .wrap { max-width: 900px; margin: 0 auto; }
     h1 { margin: 0 0 8px; font-size: 1.6rem; }
     p.help { margin: 0 0 20px; color: #555; }
-    .card {
-      background: #fff; border: 1px solid #e7e8ea; border-radius: var(--radius);
-      padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    .card { background:#fff; border:1px solid #e7e8ea; border-radius:var(--radius); padding:18px; box-shadow:0 1px 4px rgba(0,0,0,.04); }
+    label { font-weight:600; display:block; margin:0 0 6px; }
+    .req::after { content:" *"; color: var(--err); }
+    input[type="text"] {
+      width:100%; padding:12px; border:1px solid #d7d9dd; border-radius:10px; background:#fbfcfe; font-size:1rem;
     }
-    label { font-weight: 600; display: block; margin: 0 0 6px; }
+    input.error, textarea.error { border-color: var(--err) !important; outline: none; }
+    .err-msg { color: var(--err); font-size:.9rem; margin-top:6px; min-height:1.2em; }
     textarea {
-      width: 100%; min-height: 220px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: .95rem; line-height: 1.4; padding: var(--pad); border-radius: 10px; border: 1px solid #d7d9dd; background: #fbfcfe;
+      width:100%; min-height:220px; resize:vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.95rem; line-height:1.4; padding: var(--pad); border-radius:10px; border:1px solid #d7d9dd; background:#fbfcfe;
     }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    button {
-      padding: 10px 14px; border-radius: 10px; border: 1px solid #cfd3d8; background: #fff; cursor: pointer;
-    }
-    button.primary { background: #111; color: #fff; border-color: #111; }
-    .muted { color: #666; font-size: .9rem; }
-    .counter { margin-top: 6px; color: #666; font-size: .85rem; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    button { padding:10px 14px; border-radius:10px; border:1px solid #cfd3d8; background:#fff; cursor:pointer; }
+    button.primary { background:#111; color:#fff; border-color:#111; }
+    .muted { color:#666; font-size:.9rem; }
+    .counter { margin-top:6px; color:#666; font-size:.85rem; }
     #output {
-      white-space: pre-wrap; background: #0b1020; color: #e9eaf0; min-height: 200px;
-      border-radius: 10px; padding: var(--pad); border: 1px solid #1f2741; overflow-wrap: anywhere;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92rem;
+      white-space: pre-wrap; background:#0b1020; color:#e9eaf0; min-height:200px;
+      border-radius:10px; padding: var(--pad); border:1px solid #1f2741; overflow-wrap:anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.92rem;
     }
-    .footer { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
-    .ok { color: #0a7a2a; font-weight: 600; }
-    .warn { color: #b24d00; font-weight: 600; }
+    .footer { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+    .ok { color:#0a7a2a; font-weight:600; }
+    .warn { color:#b24d00; font-weight:600; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Meeting Summary Prompt Builder</h1>
-    <p class="help">Paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong> or <strong>Download</strong> the combined prompt.</p>
+    <p class="help">Enter the meeting title, paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong> or <strong>Download</strong>.</p>
 
+    <!-- Title -->
+    <div class="card" style="margin-bottom:16px">
+      <label class="req" for="title">Meeting Title</label>
+      <input id="title" type="text" placeholder="e.g., 2025-03-06 MS AD Domain assessment — One Week Update" />
+      <div id="titleErr" class="err-msg" aria-live="polite"></div>
+    </div>
+
+    <!-- Transcript -->
     <div class="card" style="margin-bottom:16px">
       <label for="transcript">Transcript</label>
       <textarea id="transcript" placeholder="Paste transcript here…"></textarea>
@@ -56,8 +62,9 @@
       <p class="muted" id="saveNote"></p>
     </div>
 
+    <!-- Output -->
     <div class="card">
-      <label for="output">Output (instruction + transcript)</label>
+      <label for="output">Output (instruction + title + transcript)</label>
       <div id="output" aria-label="Generated Output"></div>
       <div class="footer">
         <button id="btnCopy">Copy to Clipboard</button>
@@ -72,6 +79,8 @@
 `Write a detailed, accurate meeting summary of the following transcript. The summary must be organized into sections, each with its own clear header and the timestamp for when that section begins. Each section should contain one or more narrative paragraphs (not bullet points). Do not leave out any important details. Highlight action items, decisions, or risks naturally within the text. The output should be in the same language as the transcript and follow the style of professional meeting minutes (like TurboScribe).`;
 
   const el = {
+    title: document.getElementById('title'),
+    titleErr: document.getElementById('titleErr'),
     transcript: document.getElementById('transcript'),
     counter: document.getElementById('counter'),
     output: document.getElementById('output'),
@@ -83,10 +92,13 @@
     saveNote: document.getElementById('saveNote'),
   };
 
-  // Persist transcript locally so you don’t lose work if you refresh
-  const KEY = 'ms_prompt_transcript_v1';
-  const saved = localStorage.getItem(KEY);
-  if (saved) el.transcript.value = saved;
+  // Persist fields locally
+  const KEY_T = 'ms_prompt_title_v1';
+  const KEY_TR = 'ms_prompt_transcript_v1';
+  const sTitle = localStorage.getItem(KEY_T);
+  const sTrans = localStorage.getItem(KEY_TR);
+  if (sTitle) el.title.value = sTitle;
+  if (sTrans) el.transcript.value = sTrans;
 
   function updateCounter() {
     const t = el.transcript.value;
@@ -95,16 +107,43 @@
   }
   updateCounter();
 
+  el.title.addEventListener('input', () => {
+    localStorage.setItem(KEY_T, el.title.value);
+    clearTitleError();
+  });
   el.transcript.addEventListener('input', () => {
-    localStorage.setItem(KEY, el.transcript.value);
+    localStorage.setItem(KEY_TR, el.transcript.value);
     updateCounter();
     el.saveNote.textContent = 'Saved locally';
     setTimeout(() => el.saveNote.textContent = '', 1200);
   });
 
+  function showTitleError(msg) {
+    el.title.classList.add('error');
+    el.titleErr.textContent = msg;
+  }
+  function clearTitleError() {
+    el.title.classList.remove('error');
+    el.titleErr.textContent = '';
+  }
+
+  function validate() {
+    const t = el.title.value.trim();
+    if (!t) {
+      showTitleError('Please enter the meeting title before generating.');
+      el.title.focus();
+      return false;
+    }
+    clearTitleError();
+    return true;
+  }
+
   function generate() {
+    if (!validate()) return;
+    const title = el.title.value.trim();
     const transcript = el.transcript.value.trim();
-    const combined = instruction + '\n\n' + transcript;
+    const header = `Title: ${title}`;
+    const combined = instruction + '\n\n' + header + '\n\n' + transcript;
     el.output.textContent = combined;
     el.status.textContent = '';
   }
@@ -120,22 +159,35 @@
   function downloadTxt() {
     const text = el.output.textContent;
     if (!text) { el.status.innerHTML = '<span class="warn">Nothing to download.</span>'; return; }
+    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+    const name = (el.title.value.trim() || 'meeting-summary-prompt').slice(0,120).replace(/[^\w\- ]+/g,'').replace(/\s+/g,'_');
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
-    a.download = `meeting-summary-prompt_${stamp}.txt`;
+    a.download = `${name}_${stamp}.txt`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+
+  // Generate on Enter anywhere; enforce title requirement
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      // Prevent adding a newline to the title field triggering unwanted behavior
+      if (document.activeElement === el.title) e.preventDefault();
+      generate();
+    }
+  });
 
   el.generate.addEventListener('click', generate);
   el.copy.addEventListener('click', copyOutput);
   el.download.addEventListener('click', downloadTxt);
   el.clear.addEventListener('click', () => {
+    el.title.value = '';
     el.transcript.value = '';
-    localStorage.removeItem(KEY);
+    localStorage.removeItem(KEY_T);
+    localStorage.removeItem(KEY_TR);
     el.output.textContent = '';
+    clearTitleError();
     updateCounter();
   });
   </script>
