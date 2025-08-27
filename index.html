@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meeting Summary Prompt Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --pad: 16px; --radius: 14px; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0; padding: 32px 20px; background: #f6f7f9; color: #111;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    p.help { margin: 0 0 20px; color: #555; }
+    .card {
+      background: #fff; border: 1px solid #e7e8ea; border-radius: var(--radius);
+      padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    label { font-weight: 600; display: block; margin: 0 0 6px; }
+    textarea {
+      width: 100%; min-height: 220px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .95rem; line-height: 1.4; padding: var(--pad); border-radius: 10px; border: 1px solid #d7d9dd; background: #fbfcfe;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    button {
+      padding: 10px 14px; border-radius: 10px; border: 1px solid #cfd3d8; background: #fff; cursor: pointer;
+    }
+    button.primary { background: #111; color: #fff; border-color: #111; }
+    .muted { color: #666; font-size: .9rem; }
+    .counter { margin-top: 6px; color: #666; font-size: .85rem; }
+    #output {
+      white-space: pre-wrap; background: #0b1020; color: #e9eaf0; min-height: 200px;
+      border-radius: 10px; padding: var(--pad); border: 1px solid #1f2741; overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92rem;
+    }
+    .footer { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .ok { color: #0a7a2a; font-weight: 600; }
+    .warn { color: #b24d00; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Meeting Summary Prompt Builder</h1>
+    <p class="help">Paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong> or <strong>Download</strong> the combined prompt.</p>
+
+    <div class="card" style="margin-bottom:16px">
+      <label for="transcript">Transcript</label>
+      <textarea id="transcript" placeholder="Paste transcript here…"></textarea>
+      <div class="row">
+        <button class="primary" id="btnGenerate">Generate</button>
+        <button id="btnClear">Clear</button>
+        <span class="counter" id="counter">0 chars • 0 lines</span>
+      </div>
+      <p class="muted" id="saveNote"></p>
+    </div>
+
+    <div class="card">
+      <label for="output">Output (instruction + transcript)</label>
+      <div id="output" aria-label="Generated Output"></div>
+      <div class="footer">
+        <button id="btnCopy">Copy to Clipboard</button>
+        <button id="btnDownload">Download .txt</button>
+        <span id="status"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const instruction =
+`Write a detailed, accurate meeting summary of the following transcript. The summary must be organized into sections, each with its own clear header and the timestamp for when that section begins. Each section should contain one or more narrative paragraphs (not bullet points). Do not leave out any important details. Highlight action items, decisions, or risks naturally within the text. The output should be in the same language as the transcript and follow the style of professional meeting minutes (like TurboScribe).`;
+
+  const el = {
+    transcript: document.getElementById('transcript'),
+    counter: document.getElementById('counter'),
+    output: document.getElementById('output'),
+    copy: document.getElementById('btnCopy'),
+    generate: document.getElementById('btnGenerate'),
+    clear: document.getElementById('btnClear'),
+    download: document.getElementById('btnDownload'),
+    status: document.getElementById('status'),
+    saveNote: document.getElementById('saveNote'),
+  };
+
+  // Persist transcript locally so you don’t lose work if you refresh
+  const KEY = 'ms_prompt_transcript_v1';
+  const saved = localStorage.getItem(KEY);
+  if (saved) el.transcript.value = saved;
+
+  function updateCounter() {
+    const t = el.transcript.value;
+    const lines = t ? t.split(/\r\n|\r|\n/).length : 0;
+    el.counter.textContent = `${t.length} chars • ${lines} lines`;
+  }
+  updateCounter();
+
+  el.transcript.addEventListener('input', () => {
+    localStorage.setItem(KEY, el.transcript.value);
+    updateCounter();
+    el.saveNote.textContent = 'Saved locally';
+    setTimeout(() => el.saveNote.textContent = '', 1200);
+  });
+
+  function generate() {
+    const transcript = el.transcript.value.trim();
+    const combined = instruction + '\n\n' + transcript;
+    el.output.textContent = combined;
+    el.status.textContent = '';
+  }
+
+  function copyOutput() {
+    const text = el.output.textContent;
+    if (!text) { el.status.innerHTML = '<span class="warn">Nothing to copy.</span>'; return; }
+    navigator.clipboard.writeText(text)
+      .then(() => el.status.innerHTML = '<span class="ok">Copied to clipboard.</span>')
+      .catch(() => el.status.innerHTML = '<span class="warn">Clipboard blocked by browser.</span>');
+  }
+
+  function downloadTxt() {
+    const text = el.output.textContent;
+    if (!text) { el.status.innerHTML = '<span class="warn">Nothing to download.</span>'; return; }
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+    a.download = `meeting-summary-prompt_${stamp}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  el.generate.addEventListener('click', generate);
+  el.copy.addEventListener('click', copyOutput);
+  el.download.addEventListener('click', downloadTxt);
+  el.clear.addEventListener('click', () => {
+    el.transcript.value = '';
+    localStorage.removeItem(KEY);
+    el.output.textContent = '';
+    updateCounter();
+  });
+  </script>
+</body>
+</html>
