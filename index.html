@@ -84,6 +84,12 @@ Participants: [INSERT_PARTICIPANTS_HERE]
 
 Write a detailed, accurate meeting summary of the following transcript. The summary must be organized into sections, each with its own clear header and the timestamp for when that section begins. Each section should contain one or more narrative paragraphs (not bullet points). Do not leave out any important details. Highlight action items, decisions, or risks naturally within the text. The output should be in the same language as the transcript and follow the style of professional meeting minutes (like TurboScribe).`;
 
+  const assistantReminder =
+`\n\n===================== IMPORTANT FOR ASSISTANT =====================
+The transcript text is included directly ABOVE in this same message.
+Do NOT ask for an uploaded file. Use the transcript already provided.
+==================================================================`;
+
   const el = {
     title: document.getElementById('title'),
     titleErr: document.getElementById('titleErr'),
@@ -150,7 +156,10 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     const title = el.title.value.trim();
     const transcript = el.transcript.value.trim();
     const filledInstruction = rawInstruction.replace('[INSERT_TITLE_HERE]', title);
-    const combined = filledInstruction + '\n\n' + transcript;
+
+    // Combine instruction + transcript + **very obvious** assistant reminder
+    const combined = filledInstruction + '\n\n' + transcript + assistantReminder;
+
     el.output.textContent = combined;
     el.status.textContent = '';
     el.repeatedTitle.textContent = 'Meeting Title: ' + title;
