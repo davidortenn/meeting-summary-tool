@@ -63,6 +63,9 @@
     <div class="card">
       <label for="output">Output (instruction + transcript)</label>
       <div id="output" aria-label="Generated Output"></div>
+
+      <p class="muted" id="repeatedTitle" style="margin-top: 16px; font-weight: 600;"></p>
+
       <div class="footer">
         <button id="btnCopy">Copy to Clipboard</button>
         <button id="btnDownload">Download .txt</button>
@@ -87,6 +90,7 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     transcript: document.getElementById('transcript'),
     counter: document.getElementById('counter'),
     output: document.getElementById('output'),
+    repeatedTitle: document.getElementById('repeatedTitle'),
     copy: document.getElementById('btnCopy'),
     generate: document.getElementById('btnGenerate'),
     clearTop: document.getElementById('btnClearTop'),
@@ -149,6 +153,7 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     const combined = filledInstruction + '\n\n' + transcript;
     el.output.textContent = combined;
     el.status.textContent = '';
+    el.repeatedTitle.textContent = 'Meeting Title: ' + title;
   }
 
   function copyOutput() {
@@ -176,6 +181,7 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     el.title.value = '';
     el.transcript.value = '';
     el.output.textContent = '';
+    el.repeatedTitle.textContent = '';
     localStorage.removeItem(KEY_T);
     localStorage.removeItem(KEY_TR);
     updateCounter();
