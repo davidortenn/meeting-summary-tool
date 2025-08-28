@@ -43,14 +43,12 @@
     <h1>Meeting Summary Prompt Builder</h1>
     <p class="help">Enter the meeting title, paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong> or <strong>Download</strong>.</p>
 
-    <!-- Title -->
     <div class="card" style="margin-bottom:16px">
       <label class="req" for="title">Meeting Title</label>
       <input id="title" type="text" placeholder="e.g., 2025-03-06 MS AD Domain assessment — One Week Update" />
       <div id="titleErr" class="err-msg" aria-live="polite"></div>
     </div>
 
-    <!-- Transcript -->
     <div class="card" style="margin-bottom:16px">
       <label for="transcript">Transcript</label>
       <textarea id="transcript" placeholder="Paste transcript here…"></textarea>
@@ -62,9 +60,8 @@
       <p class="muted" id="saveNote"></p>
     </div>
 
-    <!-- Output -->
     <div class="card">
-      <label for="output">Output (instruction + title + transcript)</label>
+      <label for="output">Output (instruction + transcript)</label>
       <div id="output" aria-label="Generated Output"></div>
       <div class="footer">
         <button id="btnCopy">Copy to Clipboard</button>
@@ -75,8 +72,13 @@
   </div>
 
   <script>
-  const instruction =
-`Write a detailed, accurate meeting summary of the following transcript. The summary must be organized into sections, each with its own clear header and the timestamp for when that section begins. Each section should contain one or more narrative paragraphs (not bullet points). Do not leave out any important details. Highlight action items, decisions, or risks naturally within the text. The output should be in the same language as the transcript and follow the style of professional meeting minutes (like TurboScribe).`;
+  const rawInstruction = 
+`Meeting Summary  
+Title: [INSERT_TITLE_HERE]  
+Duration: [INSERT_DURATION_HERE]  
+Participants: [INSERT_PARTICIPANTS_HERE]
+
+Write a detailed, accurate meeting summary of the following transcript. The summary must be organized into sections, each with its own clear header and the timestamp for when that section begins. Each section should contain one or more narrative paragraphs (not bullet points). Do not leave out any important details. Highlight action items, decisions, or risks naturally within the text. The output should be in the same language as the transcript and follow the style of professional meeting minutes (like TurboScribe).`;
 
   const el = {
     title: document.getElementById('title'),
@@ -92,7 +94,6 @@
     saveNote: document.getElementById('saveNote'),
   };
 
-  // Persist fields locally
   const KEY_T = 'ms_prompt_title_v1';
   const KEY_TR = 'ms_prompt_transcript_v1';
   const sTitle = localStorage.getItem(KEY_T);
@@ -142,8 +143,8 @@
     if (!validate()) return;
     const title = el.title.value.trim();
     const transcript = el.transcript.value.trim();
-    const header = `Title: ${title}`;
-    const combined = instruction + '\n\n' + header + '\n\n' + transcript;
+    const filledInstruction = rawInstruction.replace('[INSERT_TITLE_HERE]', title);
+    const combined = filledInstruction + '\n\n' + transcript;
     el.output.textContent = combined;
     el.status.textContent = '';
   }
@@ -169,10 +170,8 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  // Generate on Enter anywhere; enforce title requirement
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-      // Prevent adding a newline to the title field triggering unwanted behavior
       if (document.activeElement === el.title) e.preventDefault();
       generate();
     }
