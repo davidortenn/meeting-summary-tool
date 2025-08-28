@@ -41,7 +41,7 @@
 <body>
   <div class="wrap">
     <h1>Meeting Summary Prompt Builder</h1>
-    <p class="help">Enter the meeting title, paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong> or <strong>Download</strong>.</p>
+    <p class="help">Enter the meeting title, paste your transcript, click <strong>Generate</strong>, then <strong>Copy</strong>, <strong>Download</strong>, or <strong>Clear</strong>.</p>
 
     <div class="card" style="margin-bottom:16px">
       <label class="req" for="title">Meeting Title</label>
@@ -54,7 +54,7 @@
       <textarea id="transcript" placeholder="Paste transcript here…"></textarea>
       <div class="row">
         <button class="primary" id="btnGenerate">Generate</button>
-        <button id="btnClear">Clear</button>
+        <button id="btnClearTop">Clear</button>
         <span class="counter" id="counter">0 chars • 0 lines</span>
       </div>
       <p class="muted" id="saveNote"></p>
@@ -66,6 +66,7 @@
       <div class="footer">
         <button id="btnCopy">Copy to Clipboard</button>
         <button id="btnDownload">Download .txt</button>
+        <button id="btnClearBottom">Clear</button>
         <span id="status"></span>
       </div>
     </div>
@@ -88,7 +89,8 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     output: document.getElementById('output'),
     copy: document.getElementById('btnCopy'),
     generate: document.getElementById('btnGenerate'),
-    clear: document.getElementById('btnClear'),
+    clearTop: document.getElementById('btnClearTop'),
+    clearBottom: document.getElementById('btnClearBottom'),
     download: document.getElementById('btnDownload'),
     status: document.getElementById('status'),
     saveNote: document.getElementById('saveNote'),
@@ -170,6 +172,17 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
+  function clearAllFields() {
+    el.title.value = '';
+    el.transcript.value = '';
+    el.output.textContent = '';
+    localStorage.removeItem(KEY_T);
+    localStorage.removeItem(KEY_TR);
+    updateCounter();
+    clearTitleError();
+    el.status.textContent = '';
+  }
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
       if (document.activeElement === el.title) e.preventDefault();
@@ -180,15 +193,8 @@ Write a detailed, accurate meeting summary of the following transcript. The summ
   el.generate.addEventListener('click', generate);
   el.copy.addEventListener('click', copyOutput);
   el.download.addEventListener('click', downloadTxt);
-  el.clear.addEventListener('click', () => {
-    el.title.value = '';
-    el.transcript.value = '';
-    localStorage.removeItem(KEY_T);
-    localStorage.removeItem(KEY_TR);
-    el.output.textContent = '';
-    clearTitleError();
-    updateCounter();
-  });
+  el.clearTop.addEventListener('click', clearAllFields);
+  el.clearBottom.addEventListener('click', clearAllFields);
   </script>
 </body>
 </html>
