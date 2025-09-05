@@ -52,6 +52,7 @@
             <textarea id="transcript" placeholder="Paste transcript here..."></textarea>
             <div class="row">
                 <button class="primary" id="btnGenerate">Generate</button>
+                <button id="btnCopyTop">Copy to Clipboard</button>
                 <button id="btnCopyTitleTop">Copy Meeting Title to Clipboard</button>
                 <button id="btnClearTop">Clear</button>
                 <span class="counter" id="counter">0 chars • 0 lines</span>
@@ -96,6 +97,7 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
             output: document.getElementById('output'),
             repeatedTitle: document.getElementById('repeatedTitle'),
             copy: document.getElementById('btnCopy'),
+            copyTop: document.getElementById('btnCopyTop'),
             generate: document.getElementById('btnGenerate'),
             clearTop: document.getElementById('btnClearTop'),
             clearBottom: document.getElementById('btnClearBottom'),
@@ -234,6 +236,7 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
 
         el.generate.addEventListener('click', generate);
         el.copy.addEventListener('click', copyOutput);
+        el.copyTop.addEventListener('click', copyOutput);
         el.copyTitleTop.addEventListener('click', copyTitle);
         el.copyTitleBottom.addEventListener('click', copyTitle);
         el.download.addEventListener('click', downloadTxt);
