@@ -52,6 +52,7 @@
             <textarea id="transcript" placeholder="Paste transcript here..."></textarea>
             <div class="row">
                 <button class="primary" id="btnGenerate">Generate</button>
+                <button id="btnCopyTitleTop">Copy Meeting Title to Clipboard</button>
                 <button id="btnClearTop">Clear</button>
                 <span class="counter" id="counter">0 chars • 0 lines</span>
             </div>
@@ -63,6 +64,7 @@
             <p class="muted" id="repeatedTitle" style="margin-top: 16px; font-weight: 600;"></p>
             <div class="footer">
                 <button id="btnCopy">Copy to Clipboard</button>
+                <button id="btnCopyTitleBottom">Copy Meeting Title to Clipboard</button>
                 <button id="btnDownload">Download .txt</button>
                 <button id="btnClearBottom">Clear</button>
                 <span id="status"></span>
@@ -100,6 +102,8 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
             download: document.getElementById('btnDownload'),
             status: document.getElementById('status'),
             saveNote: document.getElementById('saveNote'),
+            copyTitleTop: document.getElementById('btnCopyTitleTop'),
+            copyTitleBottom: document.getElementById('btnCopyTitleBottom'),
         };
 
         const KEY_T = 'ms_prompt_title_v1';
@@ -164,16 +168,35 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
             const text = el.output.textContent;
             if (!text) {
                 el.status.innerHTML = '<span class="warn">Nothing to copy.</span>';
+                setTimeout(() => el.status.innerHTML = '', 2000);
                 return;
             }
             navigator.clipboard.writeText(text)
                 .then(() => {
                     el.status.innerHTML = '<span class="ok">Copied to clipboard.</span>';
-                    setTimeout(() => el.status.innerHTML = '', 2000); // Clears the message after 2 seconds
+                    setTimeout(() => el.status.innerHTML = '', 2000);
                 })
                 .catch(() => {
                     el.status.innerHTML = '<span class="warn">Clipboard blocked by browser.</span>';
-                    setTimeout(() => el.status.innerHTML = '', 2000); // Also clear error messages
+                    setTimeout(() => el.status.innerHTML = '', 2000);
+                });
+        }
+        
+        function copyTitle() {
+            const text = el.title.value.trim();
+            if (!text) {
+                el.status.innerHTML = '<span class="warn">Title is empty.</span>';
+                setTimeout(() => el.status.innerHTML = '', 2000);
+                return;
+            }
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    el.status.innerHTML = '<span class="ok">Title copied to clipboard.</span>';
+                    setTimeout(() => el.status.innerHTML = '', 2000);
+                })
+                .catch(() => {
+                    el.status.innerHTML = '<span class="warn">Clipboard blocked by browser.</span>';
+                    setTimeout(() => el.status.innerHTML = '', 2000);
                 });
         }
 
@@ -211,6 +234,8 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
 
         el.generate.addEventListener('click', generate);
         el.copy.addEventListener('click', copyOutput);
+        el.copyTitleTop.addEventListener('click', copyTitle);
+        el.copyTitleBottom.addEventListener('click', copyTitle);
         el.download.addEventListener('click', downloadTxt);
         el.clearTop.addEventListener('click', clearAllFields);
         el.clearBottom.addEventListener('click', clearAllFields);
