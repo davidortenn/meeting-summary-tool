@@ -5,7 +5,7 @@
     <title>Meeting Summary Prompt Builder</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        :root { --pad: 16px; --radius: 14px; --err:#c62828; }
+        :root { --pad: 16px; --radius: 14px; --err:#c62828; --ok-green: #2e7d32; }
         * { box-sizing: border-box; }
         body { font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif; margin:0; padding:32px 20px; background:#f6f7f9; color:#111; }
         .wrap { max-width: 900px; margin: 0 auto; }
@@ -23,8 +23,11 @@
             width:100%; min-height:220px; resize:vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size:.95rem; line-height:1.4; padding: var(--pad); border-radius:10px; border:1px solid #d7d9dd; background:#fbfcfe;
         }
-        .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-        button { padding:10px 14px; border-radius:10px; border:1px solid #cfd3d8; background:#fff; cursor:pointer; }
+        .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items: center; }
+        button { 
+            padding:10px 14px; border-radius:10px; border:1px solid #cfd3d8; background:#fff; cursor:pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease; /* Smooth transition */
+        }
         button.primary { background:#111; color:#fff; border-color:#111; }
         .muted { color:#666; font-size:.9rem; }
         .counter { margin-top:6px; color:#666; font-size:.85rem; }
@@ -33,9 +36,21 @@
             border-radius:10px; padding: var(--pad); border:1px solid #1f2741; overflow-wrap:anywhere;
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.92rem;
         }
-        .footer { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+        .footer { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items: center; }
         .ok { color:#0a7a2a; font-weight:600; }
         .warn { color:#b24d00; font-weight:600; }
+
+        /* --- New Styles --- */
+        /* Style for the green flash effect on click */
+        button.clicked {
+            background-color: var(--ok-green) !important;
+            border-color: var(--ok-green) !important;
+            color: white !important;
+        }
+        /* Make SVG icon white during the flash */
+        button.clicked svg {
+            fill: white !important;
+        }
     </style>
 </head>
 <body>
@@ -64,7 +79,11 @@
             <div id="output" aria-label="Generated Output"></div>
             <p class="muted" id="repeatedTitle" style="margin-top: 16px; font-weight: 600;"></p>
             <div class="footer">
-                <button id="btnCopy">Copy to Clipboard</button>
+                <button id="btnCopy" title="Copy Output to Clipboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:block; margin:auto;">
+                        <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6ZM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2Z"/>
+                    </svg>
+                </button>
                 <button id="btnCopyTitleBottom">Copy Meeting Title to Clipboard</button>
                 <button id="btnDownload">Download .txt</button>
                 <button id="btnClearBottom">Clear</button>
@@ -242,6 +261,17 @@ Do NOT ask for an uploaded file. Use the transcript already provided.
         el.download.addEventListener('click', downloadTxt);
         el.clearTop.addEventListener('click', clearAllFields);
         el.clearBottom.addEventListener('click', clearAllFields);
+
+        // --- New Script ---
+        // Add flash effect to all buttons on the page
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.add('clicked');
+                setTimeout(() => {
+                    button.classList.remove('clicked');
+                }, 300); // Flash duration in milliseconds
+            });
+        });
     </script>
 </body>
 </html>
